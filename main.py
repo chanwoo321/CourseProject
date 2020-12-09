@@ -159,26 +159,30 @@ class NaiveModel(object):
         """
         print("E step:")
         for doc in range(self.number_of_documents):
+            print(doc)
             for word in range(self.vocabulary_size):
                 topic_prob_sum = 0.0
                 
                 for topic in range(self.number_of_topics):
-                    self.topic_prob[doc][topic][word] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
-                    topic_prob_sum += self.topic_prob[doc][topic][word]
-
+                    self.topic_prob[doc, word, topic] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
+                    topic_prob_sum += self.topic_prob[doc, word, topic]
+                    
                 if topic_prob_sum == 0:
 
-                    # idk if this for loops is necessary? not sure if it actually changes anything
+                    # idk if this for loop is really necessary tbh
                     for topic in range(self.number_of_topics):
                         self.topic_prob[doc, word, topic] = 0
 
                     self.background_prob[doc, word] = 1
-
                 else:
                     self.topic_prob[doc] = normalize_c(self.topic_prob[doc]) # error in normalize here
-                    curr_background_prob = self.background_word_prob[word]
-                    back_sum = self.b_lambda * curr_background_prob + (1 - self.b_lambda) * topic_prob_sum
-                    self.background_prob[doc, word] = self.b_lambda * curr_background_prob / back_sum
+                    # replacing above line with below, might work?
+                    #self.topic_prob[doc,:,word] /= topic_prob_sum
+                    #print("line 180")
+                    self.topic_prob[doc] = normalize_c(self.topic_prob[doc])
+                    curr_back_prob = self.background_word_prob[word]
+                    back_sum = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * topic_prob_sum
+                    self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
 
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
@@ -232,7 +236,7 @@ class NaiveModel(object):
         # Create the counter arrays.
 
         # P(z | d, w)
-        self.topic_prob = np.zeros([self.number_of_documents, number_of_topics, self.vocabulary_size], dtype=np.float)
+        self.topic_prob = np.zeros([self.number_of_documents, self.vocabulary_size, number_of_topics], dtype=np.float)
         self.background_prob = np.zeros([self.number_of_documents, self.vocabulary_size], dtype=np.float)
 
         # P(z | d) P(w | z)
