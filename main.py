@@ -160,19 +160,25 @@ class NaiveModel(object):
         print("E step:")
         for doc in range(self.number_of_documents):
             for word in range(self.vocabulary_size):
-                fm = 0.0
+                topic_prob_sum = 0.0
+                
                 for topic in range(self.number_of_topics):
-                    self.topic_prob[doc, word, topic] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
-                    fm += self.topic_prob[doc, word, topic]
-                if fm == 0:
+                    self.topic_prob[doc][topic][word] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
+                    topic_prob_sum += self.topic_prob[doc][topic][word]
+
+                if topic_prob_sum == 0:
+
+                    # idk if this for loops is necessary? not sure if it actually changes anything
                     for topic in range(self.number_of_topics):
                         self.topic_prob[doc, word, topic] = 0
+
                     self.background_prob[doc, word] = 1
+
                 else:
-                    self.topic_prob[doc] = normalize_c(self.topic_prob[doc])
-                    curr_back_prob = self.background_word_prob[word]
-                    back_fm = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * fm
-                    self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_fm
+                    self.topic_prob[doc] = normalize_c(self.topic_prob[doc]) # error in normalize here
+                    curr_background_prob = self.background_word_prob[word]
+                    back_sum = self.b_lambda * curr_background_prob + (1 - self.b_lambda) * topic_prob_sum
+                    self.background_prob[doc, word] = self.b_lambda * curr_background_prob / back_sum
 
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
