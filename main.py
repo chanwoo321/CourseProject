@@ -157,7 +157,38 @@ class NaiveModel(object):
     def expectation_step(self):
         """ The E-step updates P(z | w, d)
         """
+
+        # below uses what we learned in MP3, runs faster than second one, unsure if either of them work properly
         print("E step:")
+        for doc in range(self.number_of_documents):
+            print("doc #", doc)
+            for word in range(self.vocabulary_size):
+                topic_prob_sum = 0.0
+                
+                for topic in range(self.number_of_topics):
+                    self.topic_prob[doc][topic][word] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
+                    topic_prob_sum += self.topic_prob[doc][topic][word]
+                    
+                if topic_prob_sum == 0:
+
+                    # idk if this for loop is really necessary tbh
+                    for topic in range(self.number_of_topics):
+                        self.topic_prob[doc][topic][word] = 0
+
+                    self.background_prob[doc, word] = 1
+                else:
+                    #self.topic_prob[doc] = normalize_c(self.topic_prob[doc]) # error in normalize here
+                    # replacing above line with below, might work?
+                    self.topic_prob[doc,:,word] /= topic_prob_sum
+                    #print("line 180")
+                    
+                    curr_back_prob = self.background_word_prob[word]
+                    back_sum = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * topic_prob_sum
+                    self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
+        print(self.topic_prob[0][0])
+
+        # below uses the dimensions of topic prob as document, vocab, topics
+        """print("E step:")
         for doc in range(self.number_of_documents):
             print(doc)
             for word in range(self.vocabulary_size):
@@ -175,15 +206,15 @@ class NaiveModel(object):
 
                     self.background_prob[doc, word] = 1
                 else:
-                    self.topic_prob[doc] = normalize_c(self.topic_prob[doc]) # error in normalize here
+                    self.topic_prob[doc] = normalize_c(self.topic_prob[doc]) # unsure if this normalize is working
                     # replacing above line with below, might work?
                     #self.topic_prob[doc,:,word] /= topic_prob_sum
                     #print("line 180")
                     self.topic_prob[doc] = normalize_c(self.topic_prob[doc])
                     curr_back_prob = self.background_word_prob[word]
                     back_sum = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * topic_prob_sum
-                    self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
-
+                    self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum"""
+        print(self.topic_prob)
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
         """
