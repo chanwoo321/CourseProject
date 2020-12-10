@@ -161,14 +161,14 @@ class NaiveModel(object):
         # below uses what we learned in MP3, runs faster than second one, unsure if either of them work properly
         #print("E step:")
         for doc in range(self.number_of_documents):
-            print("doc #", doc)
+            # print("doc #", doc)
             for word in range(self.vocabulary_size):
                 topic_prob_sum = 0.0
-                
+
                 for topic in range(self.number_of_topics):
                     self.topic_prob[doc][topic][word] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
                     topic_prob_sum += self.topic_prob[doc][topic][word]
-                    
+
                 if topic_prob_sum == 0:
 
                     # idk if this for loop is really necessary tbh
@@ -181,11 +181,11 @@ class NaiveModel(object):
                     # replacing above line with below, might work?
                     self.topic_prob[doc,:,word] /= topic_prob_sum
                     #print("line 180")
-                    
+
                     curr_back_prob = self.background_word_prob[word]
                     back_sum = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * topic_prob_sum
                     self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
-        print(self.topic_prob[0][0])
+        # print(self.topic_prob[0][0])
 
         # below uses the dimensions of topic prob as document, vocab, topics
         """print("E step:")
@@ -193,11 +193,11 @@ class NaiveModel(object):
             print(doc)
             for word in range(self.vocabulary_size):
                 topic_prob_sum = 0.0
-                
+
                 for topic in range(self.number_of_topics):
                     self.topic_prob[doc, word, topic] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
                     topic_prob_sum += self.topic_prob[doc, word, topic]
-                    
+
                 if topic_prob_sum == 0:
 
                     # idk if this for loop is really necessary tbh
@@ -214,11 +214,11 @@ class NaiveModel(object):
                     curr_back_prob = self.background_word_prob[word]
                     back_sum = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * topic_prob_sum
                     self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum"""
-        print(self.topic_prob)
+        # print(self.topic_prob)
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
         """
-        print("M step:")
+        # print("M step:")
 
         for z in range(0, number_of_topics):
             #outer_sum = 0
@@ -230,21 +230,21 @@ class NaiveModel(object):
                     sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
 
                 self.topic_word_prob[z][j] = sum
-            
+
         self.topic_word_prob = normalize(self.topic_word_prob)
         #print("M step:", self.topic_word_prob) # This seems correct
-        
-        
+
+
         # update P(z | d)
         for d_index in range(0, len(self.documents)):
             #outer_sum = 0
 
             for z in range(0, number_of_topics):
                 sum = 0
-                
+
                 for j in range(0, self.vocabulary_size):
                     sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j]
-                
+
                 self.document_topic_prob[d_index][z] = sum
                 #outer_sum += sum
 
@@ -260,7 +260,7 @@ class NaiveModel(object):
         for topic in range(number_of_topics):
             for word in range(self.vocabulary_size):
                 for doc in range(self.number_of_documents):
-                    new_topic_word_prob += self.term_doc_matrix[topic, word] * self.topic_prob[doc, word, topic] 
+                    new_topic_word_prob += self.term_doc_matrix[topic, word] * self.topic_prob[doc, word, topic]
         self.topic_word_prob = normalize(new_topic_word_prob)
 
         new_document_topic_prob = np.zeros(self.document_topic_prob.shape)
@@ -324,18 +324,19 @@ class NaiveModel(object):
             self.calculate_likelihood(number_of_topics)
             current_likelihood = self.likelihoods[-1]
             if iteration > 2:
-                print(self.likelihoods[-2])
-                print(self.likelihoods[-1])
+                # print(self.likelihoods[-2])
+                # print(self.likelihoods[-1])
                 if abs(self.likelihoods[-2] - self.likelihoods[-1]) < .0001:
                     break
 
 
 def main():
-    documents_path = './data/mac.txt'
+    documents_path = './data/thinkpad.txt'
+    print("File path: " + documents_path)
     model = NaiveModel(documents_path)
     model.build_corpus()
     model.build_vocabulary()
-    print(model.vocabulary)
+    # print(model.vocabulary)
     print("Vocabulary size:" + str(len(model.vocabulary)))
     print("Number of documents:" + str(len(model.documents)))
     number_of_topics = 2
