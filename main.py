@@ -159,7 +159,7 @@ class NaiveModel(object):
         """
 
         # below uses what we learned in MP3, runs faster than second one, unsure if either of them work properly
-        print("E step:")
+        #print("E step:")
         for doc in range(self.number_of_documents):
             print("doc #", doc)
             for word in range(self.vocabulary_size):
@@ -220,11 +220,47 @@ class NaiveModel(object):
         """
         print("M step:")
 
-        new_topic_word_prob = np.zeros(self.topic_word_prob.shape)
+        for z in range(0, number_of_topics):
+            #outer_sum = 0
+
+            for j in range(0, self.vocabulary_size):
+                sum = 0
+
+                for d_index in range(0, len(self.documents)):
+                    sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
+
+                self.topic_word_prob[z][j] = sum
+            
+        self.topic_word_prob = normalize(self.topic_word_prob)
+        #print("M step:", self.topic_word_prob) # This seems correct
+        
+        
+        # update P(z | d)
+        for d_index in range(0, len(self.documents)):
+            #outer_sum = 0
+
+            for z in range(0, number_of_topics):
+                sum = 0
+                
+                for j in range(0, self.vocabulary_size):
+                    sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j]
+                
+                self.document_topic_prob[d_index][z] = sum
+                #outer_sum += sum
+
+            #self.document_topic_prob /= outer_sum
+            #normalize(self.document_topic_prob[d_index])
+
+        #print(self.document_topic_prob[0])
+        self.document_topic_prob = normalize(self.document_topic_prob)
+
+        #####################################################################
+
+        """new_topic_word_prob = np.zeros(self.topic_word_prob.shape)
         for topic in range(number_of_topics):
             for word in range(self.vocabulary_size):
                 for doc in range(self.number_of_documents):
-                    new_topic_word_prob += self.term_doc_matrix[topic, word] * self.topic_prob[doc, word, topic]
+                    new_topic_word_prob += self.term_doc_matrix[topic, word] * self.topic_prob[doc, word, topic] 
         self.topic_word_prob = normalize(new_topic_word_prob)
 
         new_document_topic_prob = np.zeros(self.document_topic_prob.shape)
@@ -233,7 +269,7 @@ class NaiveModel(object):
                 for word in range(self.vocabulary_size):
                     new_document_topic_prob[doc, topic] += self.term_doc_matrix[doc, word] * self.topic_prob[doc, word, topic]
 
-        self.document_topic_prob = normalize(self.document_topic_prob)
+        self.document_topic_prob = normalize(self.document_topic_prob)"""
 
     def calculate_likelihood(self, number_of_topics):
         """ Calculate the current log-likelihood of the model using
@@ -250,7 +286,7 @@ class NaiveModel(object):
                 inner_sum = 0
                 for topic in range(number_of_topics):
                     inner_sum += self.document_topic_prob[doc][topic] * self.topic_word_prob[topic][word]
-                total_prob = self.background_word_prob[word] * self.b_lambda + (1 - b_lambda) * inner_sum
+                total_prob = self.background_word_prob[word] * self.b_lambda + (1 - self.b_lambda) * inner_sum
                 log_likelihood += self.term_doc_matrix[doc][word] * math.log(total_prob)
         self.likelihoods.append(log_likelihood)
 
@@ -267,7 +303,7 @@ class NaiveModel(object):
         # Create the counter arrays.
 
         # P(z | d, w)
-        self.topic_prob = np.zeros([self.number_of_documents, self.vocabulary_size, number_of_topics], dtype=np.float)
+        self.topic_prob = np.zeros([self.number_of_documents, number_of_topics, self.vocabulary_size], dtype=np.float)
         self.background_prob = np.zeros([self.number_of_documents, self.vocabulary_size], dtype=np.float)
 
         # P(z | d) P(w | z)
