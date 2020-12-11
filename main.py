@@ -315,10 +315,6 @@ class NaiveModel(object):
         for iteration in range(max_iter):
             print("Iteration #" + str(iteration + 1) + "...")
 
-            # ############################
-            # your code here
-            # ############################
-
             self.expectation_step()
             self.maximization_step(number_of_topics)
             self.calculate_likelihood(number_of_topics)
@@ -330,8 +326,7 @@ class NaiveModel(object):
                     break
 
 
-def main():
-    documents_path = './data/thinkpad.txt'
+def main(documents_path='./data/combined/laptops.txt'):
     print("File path: " + documents_path)
     model = NaiveModel(documents_path)
     model.build_corpus()
