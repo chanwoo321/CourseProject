@@ -276,9 +276,6 @@ class NaiveModel(object):
         the model's updated probability matrices
         Append the calculated log-likelihood to self.likelihoods
         """
-        # ############################
-        # your code here
-        # ############################
 
         log_likelihood = 0
         for doc in range(self.number_of_documents):
