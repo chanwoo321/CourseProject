@@ -34,7 +34,7 @@ def normalize_c(input_matrix):
     temp = input_matrix.copy()
     return normalize(temp.T).T
 
-class NaiveModel(object):
+class CCModel(object):
     """
     Model for topic mining with the baseline mixture model.
     """
@@ -287,7 +287,7 @@ class NaiveModel(object):
                 log_likelihood += self.term_doc_matrix[doc][word] * math.log(total_prob)
         self.likelihoods.append(log_likelihood)
 
-    def naivemodel(self, number_of_topics, max_iter, epsilon):
+    def ccmodel(self, number_of_topics, max_iter, epsilon):
 
         """
         Model topics.
@@ -322,12 +322,10 @@ class NaiveModel(object):
                 if abs(self.likelihoods[-2] - self.likelihoods[-1]) < .0001:
                     break
 
-        return self.topic_word_prob, self.document_topic_prob
 
-
-def main():
-    documents_path = './data/mac.txt'
-    model = NaiveModel(documents_path)
+def main(documents_path='./data/combined/laptops.txt'):
+    print("File path: " + documents_path)
+    model = CCModel(documents_path)
     model.build_corpus()
     model.build_vocabulary()
     # print(model.vocabulary)
@@ -336,12 +334,7 @@ def main():
     number_of_topics = 2
     max_iterations = 200
     epsilon = 0.001
-    topic_word, doc_topic = model.naivemodel(number_of_topics, max_iterations, epsilon)
-    for i in range(len(topic_word[0])):
-        if topic_word[0][i] != 0:
-            print(model.vocabulary[i], topic_word[0][i])
-
-
+    model.ccmodel(number_of_topics, max_iterations, epsilon)
 
 
 if __name__ == '__main__':
