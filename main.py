@@ -161,7 +161,7 @@ class NaiveModel(object):
         # below uses what we learned in MP3, runs faster than second one, unsure if either of them work properly
         #print("E step:")
         for doc in range(self.number_of_documents):
-            print("doc #", doc)
+            #print("doc #", doc)
             for word in range(self.vocabulary_size):
                 topic_prob_sum = 0.0
                 
@@ -329,9 +329,11 @@ class NaiveModel(object):
                 if abs(self.likelihoods[-2] - self.likelihoods[-1]) < .0001:
                     break
 
+        return self.topic_prob, self.background_prob
+
 
 def main():
-    documents_path = './data/mac.txt'
+    documents_path = './data/afghanistan.txt'
     model = NaiveModel(documents_path)
     model.build_corpus()
     model.build_vocabulary()
