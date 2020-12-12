@@ -7,6 +7,7 @@ Created by Jonathan Kim, Michael Xiang, and Tyler Ruckstaetter.
 
 import numpy as np
 import math
+import pandas as pd
 
 def normalize(input_matrix):
     """
@@ -17,10 +18,10 @@ def normalize(input_matrix):
         return input_matrix / input_matrix.sum()
 
     row_sums = input_matrix.sum(axis=1)
-    # try:
-    #     assert (np.count_nonzero(row_sums)==np.shape(row_sums)[0]) # no row should sum to zero
-    # except Exception:
-    #     raise Exception("Error while normalizing. Row(s) sum to zero")
+    try:
+        assert (np.count_nonzero(row_sums)==np.shape(row_sums)[0]) # no row should sum to zero
+    except Exception:
+        raise Exception("Error while normalizing. Row(s) sum to zero")
     if (np.count_nonzero(row_sums)==np.shape(row_sums)[0]):
         return input_matrix
     new_matrix = input_matrix / row_sums[:, np.newaxis]
@@ -176,14 +177,15 @@ class NaiveModel(object):
                         self.topic_prob[doc][topic][word] = 0
 
                     self.background_prob[doc, word] = 1
+
                 else:
-                    #self.topic_prob[doc] = normalize_c(self.topic_prob[doc]) # error in normalize here
+                    self.topic_prob[doc] = normalize(self.topic_prob[doc]) # error in normalize here
                     # replacing above line with below, might work?
-                    self.topic_prob[doc,:,word] /= topic_prob_sum
+                    #self.topic_prob[doc,:,word] /= topic_prob_sum
                     #print("line 180")
 
                     curr_back_prob = self.background_word_prob[word]
-                    back_sum = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * topic_prob_sum
+                    back_sum = self.b_lambda * curr_back_prob + ((1 - self.b_lambda) * topic_prob_sum)
                     self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
         # print(self.topic_prob[0][0])
 
@@ -326,7 +328,7 @@ class NaiveModel(object):
 
 
 def main():
-    documents_path = './data/mac.txt'
+    documents_path = './data/combined/wars.txt'
     model = NaiveModel(documents_path)
     model.build_corpus()
     model.build_vocabulary()
@@ -337,11 +339,20 @@ def main():
     max_iterations = 200
     epsilon = 0.001
     topic_word, doc_topic = model.naivemodel(number_of_topics, max_iterations, epsilon)
-    for i in range(len(topic_word[0])):
-        if topic_word[0][i] != 0:
-            print(model.vocabulary[i], topic_word[0][i])
+    topic_word_prob_dict = dict()
 
+    for j in range(number_of_topics):
+        topic_word_prob_dict[j] = list()
 
+        for i in range(len(topic_word[j])):
+            if topic_word[j][i] != 0:
+                # if the word prob != 0 for a topic, add to topic dict
+                topic_word_prob_dict[j].append((model.vocabulary[i], topic_word[j][i]))
+    
+    # just testing over the first topic
+    df = pd.DataFrame(topic_word_prob_dict[0], columns = ['word','probability'])
+    df = df.sort_values(by='probability', ascending=False)
+    print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
 
 
 if __name__ == '__main__':
