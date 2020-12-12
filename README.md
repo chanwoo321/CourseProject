@@ -12,6 +12,10 @@ Please fork this repository and paste the github link of your fork on Microsoft 
 
 [Running the Software](#run)
 
+[Code Information](#code)
+
+ - [Baseline Model](#baseline)
+
 <a name="intro"/>
 
 # Introduction
@@ -50,4 +54,72 @@ This software uses Python3 and uses numpy. To run the baseline mixture model, en
 python main.py
 ```
 
-This will run the baseline model.
+This will run the baseline model on data/combined/laptops.txt by default. If another data set should be analyzed, provide the file location as a parameter. For example, if analysis wants to be run on war models, run the following:
+
+```
+python main.py ./data/combined/wars.txt
+```
+
+
+<a name="code"/>
+
+# Code Information
+
+<a name="baseline"/>
+
+## Baseline model
+
+The code from the baseline model is primarily based on the PLSA algorithm as used in MP3 of CS 410. This model was estimated using the EM (Estimation-Maximization) algorithm. Here is a quick overview of the functions provided:
+
+#### normalize(input_matrix)
+
+Normalizes the rows of a 2d input_matrix so they sum to 1.
+
+### class NaiveModel(object)
+
+Class that actually runs the baseline mixture model. Includes the following methods:
+
+#### build_corpus(self)
+
+Fills in self.documents with a list of list of words by reading from the document path
+
+#### build_vocabulary(self)
+
+Constructs a list of unique works in the whole corpus and updates self.vocabulary
+
+#### build_term_doc_matrix(self)
+
+Constructs a term document matrix where each row represents a document, and each column represents a vocabulary term.
+
+
+#### initialize_randomly(self, number_of_topics)
+
+Randomly sets the normalized matrices self.document_topic_prob, self.topic_word_prob, and self.background_prob.
+
+#### initialize_uniformly(self, number_of_topics)
+
+Uniformly sets the normalized matrices self.document_topic_prob, self.topic_word_prob, and self.background_prob.
+
+#### initialize(self, number_of_topics, random=False)
+
+Sets up the matrices of the model using initalize_randomly or initialize_uniformly.
+
+#### expectation_step(self)
+
+Runs the expectation_step as part of the EM algorithm. 
+
+#### maximization_step(self, number_of_topics)
+
+Runs the maximization_step as part of the EM algorithm.
+
+#### calculate_likelihood(self, number_of_topics)
+
+Calculates the log-likelihood of the model using the model's updated probability matrices. Used to determine when the EM algorithm is complete/converged.
+
+#### naivemodel(self, number_of_topics, max_iter, epsilon)
+
+Runs the model in its entirety on self.document_path and the provided parameters.
+
+#### main(documents_path)
+
+This is the default function used when running from the terminal. Runs the model with default parameters.
