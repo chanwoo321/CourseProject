@@ -8,6 +8,7 @@ Created by Jonathan Kim, Michael Xiang, and Tyler Ruckstaetter.
 import numpy as np
 import math
 import pandas as pd
+import sys
 
 def normalize(input_matrix):
     """
@@ -284,7 +285,10 @@ def show_top_10(matrix, model, number_of_topics):
         print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
 
 def main():
-    documents_path = './data/combined/wars.txt'
+    if (len(sys.argv) == 2):
+        documents_path = sys.argv[1]
+    else:
+        documents_path = './data/combined/wars.txt'
     print("File path: " + documents_path)
     model = NaiveModel(documents_path)
     model.build_corpus()
