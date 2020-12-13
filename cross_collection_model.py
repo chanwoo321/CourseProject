@@ -367,14 +367,16 @@ class CCModel(object):
         """
 
         log_likelihood = 0
-        for doc in range(self.number_of_documents):
-            for word in range(self.vocabulary_size):
-                inner_sum = 0
-                for topic in range(number_of_topics):
-                    inner_sum += self.document_topic_prob[doc, topic] * self.topic_word_prob[topic, word]
-                total_prob = self.background_word_prob[word] * self.b_lambda + (1 - self.b_lambda) * inner_sum
-                log_likelihood += self.term_doc_matrix[doc, word] * math.log(total_prob)
+        for collection in range(self.number_of_collections):
+            for doc in range(self.number_of_documents_per_collection[collection]):
+                for word in range(self.vocabulary_size):
+                    inner_sum = 0
+                    for topic in range(number_of_topics):
+                        inner_sum += self.document_topic_prob[collection][doc, topic] * self.topic_word_prob[topic, word]
+                    total_prob = self.background_word_prob[word] * self.b_lambda + (1 - self.b_lambda) * inner_sum
+                    log_likelihood += self.term_doc_matrix[collection][doc, word] * math.log(total_prob)
         self.likelihoods.append(log_likelihood)
+
 
     def ccmodel(self, number_of_topics, max_iter, epsilon):
 
@@ -405,16 +407,16 @@ class CCModel(object):
         # Run the EM algorithm
         current_likelihood = 0.0
 
-        for iteration in range(20):
+        for iteration in range(5):
             print("Iteration #" + str(iteration + 1) + "...")
 
             self.expectation_step()
             self.maximization_step(number_of_topics)
-            # self.calculate_likelihood(number_of_topics)
-            # current_likelihood = self.likelihoods[-1]
-            # if iteration > 2:
-            #     if abs(self.likelihoods[-2] - self.likelihoods[-1]) < epsilon:
-            #         break
+            self.calculate_likelihood(number_of_topics)
+            current_likelihood = self.likelihoods[-1]
+            if iteration > 2:
+                if abs(self.likelihoods[-2] - self.likelihoods[-1]) < epsilon:
+                    break
 
         return self.topic_word_prob, self.topic_word_prob_per_collection
 
@@ -436,15 +438,15 @@ def show_top_10(matrix, model):
 
 
 def main():
-    documents_path = './data/combined/wars.txt'
-    collections = ['./data/afghanistan.txt', './data/iraq.txt']
+    documents_path = './data/combined/laptops.txt'
+    collections = ['./data/inspiron.txt', './data/mac.txt', './data/thinkpad.txt']
     print("File path: " + documents_path)
     model = CCModel(documents_path, collections)
     model.build_corpus()
     model.build_vocabulary()
     print("Vocabulary size:" + str(len(model.vocabulary)))
-    print("Number of documents:" + str(len(model.documents)))
-    number_of_topics = 5
+    print("Number of collections:" + str(len(model.documents)))
+    number_of_topics = 8
     max_iterations = 200
     epsilon = 0.001
     topic_word, coll_topic_word = model.ccmodel(number_of_topics, max_iterations, epsilon)
