@@ -309,7 +309,7 @@ class CCModel(object):
                 for doc in range(0, self.number_of_documents_per_collection[collection]):
                     sum += self.term_doc_matrix[collection][doc, j] * self.topic_prob_B[collection][doc, j]
             self.background_word_prob[j] = sum
-        # self.background_word_prob = normalize(self.background_word_prob)
+        self.background_word_prob = normalize(self.background_word_prob)
 
         # update p^(n+1) (...j), which is topic_word_prob[topic, word]
         # also update the otehr one, which is topic_word_prob_per_collection[collection][topic,word]
