@@ -269,6 +269,7 @@ class NaiveModel(object):
 
 def main():
     documents_path = './data/combined/wars.txt'
+    print("File path: " + documents_path)
     model = NaiveModel(documents_path)
     model.build_corpus()
     model.build_vocabulary()
