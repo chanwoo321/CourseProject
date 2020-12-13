@@ -148,10 +148,11 @@ class NaiveModel(object):
         """
         print("Initializing...")
 
-        if random:
-            self.initialize_randomly(number_of_topics)
-        else:
-            self.initialize_uniformly(number_of_topics)
+        # if random:
+        #     self.initialize_randomly(number_of_topics)
+        # else:
+        #     self.initialize_uniformly(number_of_topics)
+        self.initialize_randomly(number_of_topics)
 
     def expectation_step(self):
         """ The E-step updates P(z | w, d)
@@ -201,7 +202,7 @@ class NaiveModel(object):
                 sum += self.term_doc_matrix[d_index, j] * self.background_prob[d_index, j]
 
             self.background_word_prob[j] = sum
-
+        self.background_word_prob = normalize(self.background_word_prob)
         # update P(z | d)
         for d_index in range(0, len(self.documents)):
             #outer_sum = 0
