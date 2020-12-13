@@ -332,10 +332,10 @@ class CCModel(object):
             for z in range(0, number_of_topics):
                 for j in range(self.vocabulary_size):
                     sum2 = 0
-                        for doc in range(self.number_of_documents_per_collection[collection]):
-                            prod = self.term_doc_matrix[collection][doc,word] * (1 - self.topic_prob_B[collection][doc,word])
-                            prod *= self.topic_prob_j[collection][doc,topic,word]
-                            sum2 += prod * (1 - self.topic_prob_C[collection][doc,topic,word])
+                    for doc in range(self.number_of_documents_per_collection[collection]):
+                        prod = self.term_doc_matrix[collection][doc,word] * (1 - self.topic_prob_B[collection][doc,word])
+                        prod *= self.topic_prob_j[collection][doc,topic,word]
+                        sum2 += prod * (1 - self.topic_prob_C[collection][doc,topic,word])
                     # bad I think this line below is weird, topic word prob per collection doesnt seem to get updated
                     self.topic_word_prob_per_collection[collection][z, j] = sum2
 
