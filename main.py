@@ -13,7 +13,7 @@ def normalize(input_matrix):
     """
     Normalizes the rows of a 2d input_matrix so they sum to 1
     """
-
+    # print(input_matrix)
     if len(input_matrix.shape) == 1:
         return input_matrix / input_matrix.sum()
 
@@ -22,9 +22,9 @@ def normalize(input_matrix):
         assert (np.count_nonzero(row_sums)==np.shape(row_sums)[0]) # no row should sum to zero
     except Exception:
         raise Exception("Error while normalizing. Row(s) sum to zero")
-    if (np.count_nonzero(row_sums)==np.shape(row_sums)[0]):
-        return input_matrix
     new_matrix = input_matrix / row_sums[:, np.newaxis]
+
+    # print(new_matrix)
     return new_matrix
 
 def normalize_c(input_matrix):
@@ -204,9 +204,29 @@ class NaiveModel(object):
 
                 self.topic_word_prob[z, j] = sum
 
+        # print(self.topic_word_prob.shape)
         self.topic_word_prob = normalize(self.topic_word_prob)
+        # print(self.topic_word_prob)
+        # for x in self.topic_word_prob:
+        #     varrrr = 0
+        #     for y in x:
+        #         varrrr += y
+        #     print(varrrr)
+        # print('=====================')
         #print("M step:", self.topic_word_prob) # This seems correct
 
+        #### UPDATE THE background_word_prob
+        for j in range(0, self.vocabulary_size):
+            sum = 0
+
+            for d_index in range(0, len(self.documents)):
+                sum += self.term_doc_matrix[d_index, j] * self.background_prob[d_index, j]
+
+            self.background_word_prob[j] = sum
+
+        # self.background_word_prob = normalize(self.background_word_prob)
+        # print(self.background_word_prob)
+        # print(np.sum(self.background_word_prob))
 
 
         # update P(z | d)
