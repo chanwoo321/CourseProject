@@ -267,6 +267,21 @@ class NaiveModel(object):
 
         return self.topic_word_prob, self.document_topic_prob
 
+def show_top_10(matrix, model, number_of_topics):
+    prob_dict = dict()
+
+    for j in range(number_of_topics):
+        prob_dict[j] = list()
+
+        for i in range(len(matrix[j])):
+            if matrix[j][i] != 0:
+                # if the word prob != 0 for a topic, add to topic dict
+                prob_dict[j].append((model.vocabulary[i], matrix[j][i]))
+
+    for topic in range(number_of_topics):
+        df = pd.DataFrame(prob_dict[topic], columns = ['word','probability'])
+        df = df.sort_values(by='probability', ascending=False)
+        print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
 
 def main():
     documents_path = './data/combined/wars.txt'
@@ -277,24 +292,12 @@ def main():
     print("Vocabulary size:" + str(len(model.vocabulary)))
     print("Number of documents:" + str(len(model.documents)))
     number_of_topics = 5
-    max_iterations = 200
+    max_iterations = 15
     epsilon = 0.001
     topic_word, doc_topic = model.naivemodel(number_of_topics, max_iterations, epsilon)
     topic_word_prob_dict = dict()
 
-    for j in range(number_of_topics):
-        topic_word_prob_dict[j] = list()
-
-        for i in range(len(topic_word[j])):
-            if topic_word[j][i] != 0:
-                # if the word prob != 0 for a topic, add to topic dict
-                topic_word_prob_dict[j].append((model.vocabulary[i], topic_word[j][i]))
-
-    # just testing over the first topic
-    for topic in range(number_of_topics):
-        df = pd.DataFrame(topic_word_prob_dict[topic], columns = ['word','probability'])
-        df = df.sort_values(by='probability', ascending=False)
-        print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
+    show_top_10(topic_word, model, number_of_topics)
 
 if __name__ == '__main__':
     main()
