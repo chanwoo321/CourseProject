@@ -300,12 +300,12 @@ def main():
             if topic_word[j][i] != 0:
                 # if the word prob != 0 for a topic, add to topic dict
                 topic_word_prob_dict[j].append((model.vocabulary[i], topic_word[j][i]))
-    
+        
     # just testing over the first topic
-    df = pd.DataFrame(topic_word_prob_dict[0], columns = ['word','probability'])
-    df = df.sort_values(by='probability', ascending=False)
-    print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
-
+    for topic in range(number_of_topics):
+        df = pd.DataFrame(topic_word_prob_dict[topic], columns = ['word','probability'])
+        df = df.sort_values(by='probability', ascending=False)
+        print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
 
 if __name__ == '__main__':
     main()
