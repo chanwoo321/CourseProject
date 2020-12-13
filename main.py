@@ -40,7 +40,7 @@ class NaiveModel(object):
     Model for topic mining with the baseline mixture model.
     """
 
-    def __init__(self, documents_path, b_lambda=.8):
+    def __init__(self, documents_path, b_lambda=.95):
         self.documents = []
         self.vocabulary = []
         self.likelihoods = []
@@ -179,44 +179,15 @@ class NaiveModel(object):
                     self.background_prob[doc, word] = 1
 
                 else:
-                    self.topic_prob[doc] = normalize(self.topic_prob[doc]) # error in normalize here
+                    #self.topic_prob[doc] = normalize(self.topic_prob[doc]) # error in normalize here
                     # replacing above line with below, might work?
-                    #self.topic_prob[doc,:,word] /= topic_prob_sum
+                    self.topic_prob[doc,:,word] /= topic_prob_sum
                     #print("line 180")
 
                     curr_back_prob = self.background_word_prob[word]
                     back_sum = self.b_lambda * curr_back_prob + ((1 - self.b_lambda) * topic_prob_sum)
                     self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
-        # print(self.topic_prob[0][0])
-
-        # below uses the dimensions of topic prob as document, vocab, topics
-        """print("E step:")
-        for doc in range(self.number_of_documents):
-            print(doc)
-            for word in range(self.vocabulary_size):
-                topic_prob_sum = 0.0
-
-                for topic in range(self.number_of_topics):
-                    self.topic_prob[doc, word, topic] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
-                    topic_prob_sum += self.topic_prob[doc, word, topic]
-
-                if topic_prob_sum == 0:
-
-                    # idk if this for loop is really necessary tbh
-                    for topic in range(self.number_of_topics):
-                        self.topic_prob[doc, word, topic] = 0
-
-                    self.background_prob[doc, word] = 1
-                else:
-                    self.topic_prob[doc] = normalize_c(self.topic_prob[doc]) # unsure if this normalize is working
-                    # replacing above line with below, might work?
-                    #self.topic_prob[doc,:,word] /= topic_prob_sum
-                    #print("line 180")
-                    self.topic_prob[doc] = normalize_c(self.topic_prob[doc])
-                    curr_back_prob = self.background_word_prob[word]
-                    back_sum = self.b_lambda * curr_back_prob + (1 - self.b_lambda) * topic_prob_sum
-                    self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum"""
-        # print(self.topic_prob)
+        
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
         """
@@ -245,7 +216,7 @@ class NaiveModel(object):
                 sum = 0
 
                 for j in range(0, self.vocabulary_size):
-                    sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j]
+                    sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
 
                 self.document_topic_prob[d_index][z] = sum
                 #outer_sum += sum
@@ -255,23 +226,6 @@ class NaiveModel(object):
 
         #print(self.document_topic_prob[0])
         self.document_topic_prob = normalize(self.document_topic_prob)
-
-        #####################################################################
-
-        """new_topic_word_prob = np.zeros(self.topic_word_prob.shape)
-        for topic in range(number_of_topics):
-            for word in range(self.vocabulary_size):
-                for doc in range(self.number_of_documents):
-                    new_topic_word_prob += self.term_doc_matrix[topic, word] * self.topic_prob[doc, word, topic]
-        self.topic_word_prob = normalize(new_topic_word_prob)
-
-        new_document_topic_prob = np.zeros(self.document_topic_prob.shape)
-        for doc in range(self.number_of_documents):
-            for topic in range(number_of_topics):
-                for word in range(self.vocabulary_size):
-                    new_document_topic_prob[doc, topic] += self.term_doc_matrix[doc, word] * self.topic_prob[doc, word, topic]
-
-        self.document_topic_prob = normalize(self.document_topic_prob)"""
 
     def calculate_likelihood(self, number_of_topics):
         """ Calculate the current log-likelihood of the model using
@@ -298,8 +252,6 @@ class NaiveModel(object):
 
         # build term-doc matrix
         self.build_term_doc_matrix()
-
-        # Create the counter arrays.
 
         # P(z | d, w)
         self.topic_prob = np.zeros([self.number_of_documents, number_of_topics, self.vocabulary_size], dtype=np.float)
