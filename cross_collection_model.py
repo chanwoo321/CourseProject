@@ -405,10 +405,10 @@ class CCModel(object):
 
         return self.topic_word_prob, self.topic_word_prob_per_collection
 
-def show_top_10(matrix, model, number_of_topics):
+def show_top_10(matrix, model):
     prob_dict = dict()
 
-    for j in range(number_of_topics):
+    for j in range(len(matrix)):
         prob_dict[j] = list()
 
         for i in range(len(matrix[j])):
@@ -416,7 +416,7 @@ def show_top_10(matrix, model, number_of_topics):
                 # if the word prob != 0 for a topic, add to topic dict
                 prob_dict[j].append((model.vocabulary[i], matrix[j][i]))
 
-    for topic in range(number_of_topics):
+    for topic in range(len(matrix)):
         df = pd.DataFrame(prob_dict[topic], columns = ['word','probability'])
         df = df.sort_values(by='probability', ascending=False)
         print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
@@ -435,9 +435,11 @@ def main():
     max_iterations = 200
     epsilon = 0.001
     topic_word, coll_topic_word = model.ccmodel(number_of_topics, max_iterations, epsilon)
+    
+    show_top_10(topic_word, model)
 
-    show_top_10(topic_word, model, number_of_topics)
-    show_top_10(coll_topic_word, model, len(collections))
+    for collection in range(len(collections)):
+        show_top_10(coll_topic_word[collection], model)
 
 if __name__ == '__main__':
     main()

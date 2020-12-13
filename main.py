@@ -292,7 +292,7 @@ def main():
     print("Vocabulary size:" + str(len(model.vocabulary)))
     print("Number of documents:" + str(len(model.documents)))
     number_of_topics = 5
-    max_iterations = 15
+    max_iterations = 200
     epsilon = 0.001
     topic_word, doc_topic = model.naivemodel(number_of_topics, max_iterations, epsilon)
     topic_word_prob_dict = dict()
