@@ -5,9 +5,11 @@ as a final project for CS 410 at the University of Illinois at Urbana-Champaign.
 Created by Jonathan Kim, Michael Xiang, and Tyler Ruckstaetter.
 """
 
-import numpy as np
 import math
+
+import numpy as np
 import pandas as pd
+
 
 def normalize(input_matrix):
     """
@@ -257,7 +259,7 @@ class CCModel(object):
                         denom = self.topic_prob_B[collection][doc,word]
                         denom += (1 - self.b_lambda) * topic_prob_sum
                         self.topic_prob_B[collection][doc,word] /= denom
-        print(self.topic_prob_j)
+        #print(self.topic_prob_j)
 
 
 
@@ -324,7 +326,8 @@ class CCModel(object):
                         sum1 += prod * self.topic_prob_C[collection][doc,topic,word]
                         sum2 += prod * (1 - self.topic_prob_C[collection][doc,topic,word])
                 self.topic_word_prob[z, j] = sum1
-                self.topic_word_prob_per_collection
+                bad I think this line below is weird, topic word prob per collection doesnt seem to get updated
+                self.topic_word_prob_per_collection ########################################################
         self.topic_word_prob = normalize(self.topic_word_prob)
         # print(type(self.topic_word_prob))
         # print(type(self.topic_word_prob_per_collection))
@@ -389,7 +392,23 @@ class CCModel(object):
             #     if abs(self.likelihoods[-2] - self.likelihoods[-1]) < epsilon:
             #         break
 
-        return self.topic_word_prob, self.document_topic_prob
+        return self.topic_word_prob, self.topic_word_prob_per_collection
+
+def show_top_10(matrix, model, number_of_topics):
+    prob_dict = dict()
+
+    for j in range(number_of_topics):
+        prob_dict[j] = list()
+
+        for i in range(len(matrix[j])):
+            if matrix[j][i] != 0:
+                # if the word prob != 0 for a topic, add to topic dict
+                prob_dict[j].append((model.vocabulary[i], matrix[j][i]))
+
+    for topic in range(number_of_topics):
+        df = pd.DataFrame(prob_dict[topic], columns = ['word','probability'])
+        df = df.sort_values(by='probability', ascending=False)
+        print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
 
 
 def main():
@@ -404,22 +423,10 @@ def main():
     number_of_topics = 5
     max_iterations = 200
     epsilon = 0.001
-    topic_word, doc_topic = model.ccmodel(number_of_topics, max_iterations, epsilon)
-    topic_word_prob_dict = dict()
-
-    for j in range(number_of_topics):
-        topic_word_prob_dict[j] = list()
-
-        for i in range(len(topic_word[j])):
-            if topic_word[j][i] != 0:
-                # if the word prob != 0 for a topic, add to topic dict
-                topic_word_prob_dict[j].append((model.vocabulary[i], topic_word[j][i]))
-
-    # just testing over the first topic
-    for topic in range(number_of_topics):
-        df = pd.DataFrame(topic_word_prob_dict[topic], columns = ['word','probability'])
-        df = df.sort_values(by='probability', ascending=False)
-        print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
+    topic_word, coll_topic_word = model.ccmodel(number_of_topics, max_iterations, epsilon)
+    
+    show_top_10(topic_word, model, number_of_topics)
+    show_top_10(coll_topic_word, model, number_of_topics)
 
 if __name__ == '__main__':
     main()
