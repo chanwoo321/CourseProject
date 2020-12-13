@@ -318,16 +318,27 @@ class CCModel(object):
         for z in range(0, number_of_topics):
             for j in range(self.vocabulary_size):
                 sum1 = 0
-                sum2 = 0
+                # sum2 = 0
                 for collection in range(self.number_of_collections):
                     for doc in range(self.number_of_documents_per_collection[collection]):
                         prod = self.term_doc_matrix[collection][doc,word] * (1 - self.topic_prob_B[collection][doc,word])
                         prod *= self.topic_prob_j[collection][doc,topic,word]
                         sum1 += prod * self.topic_prob_C[collection][doc,topic,word]
-                        sum2 += prod * (1 - self.topic_prob_C[collection][doc,topic,word])
+                        # sum2 += prod * (1 - self.topic_prob_C[collection][doc,topic,word])
                 self.topic_word_prob[z, j] = sum1
-                bad I think this line below is weird, topic word prob per collection doesnt seem to get updated
-                self.topic_word_prob_per_collection ########################################################
+                # bad I think this line below is weird, topic word prob per collection doesnt seem to get updated
+                # self.topic_word_prob_per_collection ########################################################
+        for collection in range(self.number_of_collections):
+            for z in range(0, number_of_topics):
+                for j in range(self.vocabulary_size):
+                    sum2 = 0
+                        for doc in range(self.number_of_documents_per_collection[collection]):
+                            prod = self.term_doc_matrix[collection][doc,word] * (1 - self.topic_prob_B[collection][doc,word])
+                            prod *= self.topic_prob_j[collection][doc,topic,word]
+                            sum2 += prod * (1 - self.topic_prob_C[collection][doc,topic,word])
+                    # bad I think this line below is weird, topic word prob per collection doesnt seem to get updated
+                    self.topic_word_prob_per_collection[collection][z, j] = sum2
+
         self.topic_word_prob = normalize(self.topic_word_prob)
         # print(type(self.topic_word_prob))
         # print(type(self.topic_word_prob_per_collection))
@@ -424,7 +435,7 @@ def main():
     max_iterations = 200
     epsilon = 0.001
     topic_word, coll_topic_word = model.ccmodel(number_of_topics, max_iterations, epsilon)
-    
+
     show_top_10(topic_word, model, number_of_topics)
     show_top_10(coll_topic_word, model, len(collections))
 
