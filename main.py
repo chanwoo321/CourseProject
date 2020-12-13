@@ -13,7 +13,6 @@ def normalize(input_matrix):
     """
     Normalizes the rows of a 2d input_matrix so they sum to 1
     """
-    # print(input_matrix)
     if len(input_matrix.shape) == 1:
         return input_matrix / input_matrix.sum()
 
@@ -24,7 +23,6 @@ def normalize(input_matrix):
         raise Exception("Error while normalizing. Row(s) sum to zero")
     new_matrix = input_matrix / row_sums[:, np.newaxis]
 
-    # print(new_matrix)
     return new_matrix
 
 def normalize_c(input_matrix):
@@ -159,10 +157,7 @@ class NaiveModel(object):
         """ The E-step updates P(z | w, d)
         """
 
-        # below uses what we learned in MP3, runs faster than second one, unsure if either of them work properly
-        #print("E step:")
         for doc in range(self.number_of_documents):
-            # print("doc #", doc)
             for word in range(self.vocabulary_size):
                 topic_prob_sum = 0.0
 
@@ -171,19 +166,12 @@ class NaiveModel(object):
                     topic_prob_sum += self.topic_prob[doc, topic, word]
 
                 if topic_prob_sum == 0:
-
-                    # idk if this for loop is really necessary tbh
                     for topic in range(self.number_of_topics):
                         self.topic_prob[doc, topic, word] = 0
-
                     self.background_prob[doc, word] = 1
 
                 else:
-                    #self.topic_prob[doc] = normalize(self.topic_prob[doc]) # error in normalize here
-                    # replacing above line with below, might work?
                     self.topic_prob[doc,:,word] /= topic_prob_sum
-                    #print("line 180")
-
                     curr_back_prob = self.background_word_prob[word]
                     back_sum = self.b_lambda * curr_back_prob + ((1 - self.b_lambda) * topic_prob_sum)
                     self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
@@ -192,7 +180,6 @@ class NaiveModel(object):
         """ The M-step updates P(w | z)
         """
         # print("M step:")
-
         for z in range(0, number_of_topics):
             #outer_sum = 0
 
@@ -204,18 +191,9 @@ class NaiveModel(object):
 
                 self.topic_word_prob[z, j] = sum
 
-        # print(self.topic_word_prob.shape)
         self.topic_word_prob = normalize(self.topic_word_prob)
-        # print(self.topic_word_prob)
-        # for x in self.topic_word_prob:
-        #     varrrr = 0
-        #     for y in x:
-        #         varrrr += y
-        #     print(varrrr)
-        # print('=====================')
-        #print("M step:", self.topic_word_prob) # This seems correct
 
-        #### UPDATE THE background_word_prob
+        # Update the background_word_prob
         for j in range(0, self.vocabulary_size):
             sum = 0
 
@@ -223,11 +201,6 @@ class NaiveModel(object):
                 sum += self.term_doc_matrix[d_index, j] * self.background_prob[d_index, j]
 
             self.background_word_prob[j] = sum
-
-        # self.background_word_prob = normalize(self.background_word_prob)
-        # print(self.background_word_prob)
-        # print(np.sum(self.background_word_prob))
-
 
         # update P(z | d)
         for d_index in range(0, len(self.documents)):
@@ -240,10 +213,6 @@ class NaiveModel(object):
                     sum += self.term_doc_matrix[d_index, j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
 
                 self.document_topic_prob[d_index, z] = sum
-                #outer_sum += sum
-
-            #self.document_topic_prob /= outer_sum
-            #normalize(self.document_topic_prob[d_index])
 
         #print(self.document_topic_prob[0])
         self.document_topic_prob = normalize(self.document_topic_prob)
@@ -292,8 +261,6 @@ class NaiveModel(object):
             self.calculate_likelihood(number_of_topics)
             current_likelihood = self.likelihoods[-1]
             if iteration > 2:
-                # print(self.likelihoods[-2])
-                # print(self.likelihoods[-1])
                 if abs(self.likelihoods[-2] - self.likelihoods[-1]) < epsilon:
                     break
 
@@ -305,7 +272,6 @@ def main():
     model = NaiveModel(documents_path)
     model.build_corpus()
     model.build_vocabulary()
-    # print(model.vocabulary)
     print("Vocabulary size:" + str(len(model.vocabulary)))
     print("Number of documents:" + str(len(model.documents)))
     number_of_topics = 5
