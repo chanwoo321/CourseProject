@@ -426,7 +426,7 @@ def main():
     topic_word, coll_topic_word = model.ccmodel(number_of_topics, max_iterations, epsilon)
     
     show_top_10(topic_word, model, number_of_topics)
-    show_top_10(coll_topic_word, model, number_of_topics)
+    show_top_10(coll_topic_word, model, len(collections))
 
 if __name__ == '__main__':
     main()
