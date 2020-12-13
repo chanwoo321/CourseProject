@@ -112,7 +112,7 @@ class NaiveModel(object):
                 else:
                     words_dict[word] = 1
             for key in words_dict:
-                new_term_doc_matrix[line][self.vocabulary.index(key)] = words_dict[key]
+                new_term_doc_matrix[line, self.vocabulary.index(key)] = words_dict[key]
         self.term_doc_matrix = new_term_doc_matrix
 
     def initialize_randomly(self, number_of_topics):
@@ -167,14 +167,14 @@ class NaiveModel(object):
                 topic_prob_sum = 0.0
 
                 for topic in range(self.number_of_topics):
-                    self.topic_prob[doc][topic][word] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
-                    topic_prob_sum += self.topic_prob[doc][topic][word]
+                    self.topic_prob[doc, topic, word] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
+                    topic_prob_sum += self.topic_prob[doc, topic, word]
 
                 if topic_prob_sum == 0:
 
                     # idk if this for loop is really necessary tbh
                     for topic in range(self.number_of_topics):
-                        self.topic_prob[doc][topic][word] = 0
+                        self.topic_prob[doc, topic, word] = 0
 
                     self.background_prob[doc, word] = 1
 
@@ -187,7 +187,7 @@ class NaiveModel(object):
                     curr_back_prob = self.background_word_prob[word]
                     back_sum = self.b_lambda * curr_back_prob + ((1 - self.b_lambda) * topic_prob_sum)
                     self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
-        
+
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
         """
@@ -200,12 +200,13 @@ class NaiveModel(object):
                 sum = 0
 
                 for d_index in range(0, len(self.documents)):
-                    sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
+                    sum += self.term_doc_matrix[d_index, j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
 
-                self.topic_word_prob[z][j] = sum
+                self.topic_word_prob[z, j] = sum
 
         self.topic_word_prob = normalize(self.topic_word_prob)
         #print("M step:", self.topic_word_prob) # This seems correct
+
 
 
         # update P(z | d)
@@ -216,9 +217,9 @@ class NaiveModel(object):
                 sum = 0
 
                 for j in range(0, self.vocabulary_size):
-                    sum += self.term_doc_matrix[d_index][j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
+                    sum += self.term_doc_matrix[d_index, j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
 
-                self.document_topic_prob[d_index][z] = sum
+                self.document_topic_prob[d_index, z] = sum
                 #outer_sum += sum
 
             #self.document_topic_prob /= outer_sum
@@ -238,9 +239,9 @@ class NaiveModel(object):
             for word in range(self.vocabulary_size):
                 inner_sum = 0
                 for topic in range(number_of_topics):
-                    inner_sum += self.document_topic_prob[doc][topic] * self.topic_word_prob[topic][word]
+                    inner_sum += self.document_topic_prob[doc, topic] * self.topic_word_prob[topic, word]
                 total_prob = self.background_word_prob[word] * self.b_lambda + (1 - self.b_lambda) * inner_sum
-                log_likelihood += self.term_doc_matrix[doc][word] * math.log(total_prob)
+                log_likelihood += self.term_doc_matrix[doc, word] * math.log(total_prob)
         self.likelihoods.append(log_likelihood)
 
     def naivemodel(self, number_of_topics, max_iter, epsilon):
@@ -273,7 +274,7 @@ class NaiveModel(object):
             if iteration > 2:
                 # print(self.likelihoods[-2])
                 # print(self.likelihoods[-1])
-                if abs(self.likelihoods[-2] - self.likelihoods[-1]) < .0001:
+                if abs(self.likelihoods[-2] - self.likelihoods[-1]) < epsilon:
                     break
 
         return self.topic_word_prob, self.document_topic_prob
@@ -287,7 +288,7 @@ def main():
     # print(model.vocabulary)
     print("Vocabulary size:" + str(len(model.vocabulary)))
     print("Number of documents:" + str(len(model.documents)))
-    number_of_topics = 2
+    number_of_topics = 5
     max_iterations = 200
     epsilon = 0.001
     topic_word, doc_topic = model.naivemodel(number_of_topics, max_iterations, epsilon)
@@ -300,7 +301,7 @@ def main():
             if topic_word[j][i] != 0:
                 # if the word prob != 0 for a topic, add to topic dict
                 topic_word_prob_dict[j].append((model.vocabulary[i], topic_word[j][i]))
-        
+
     # just testing over the first topic
     for topic in range(number_of_topics):
         df = pd.DataFrame(topic_word_prob_dict[topic], columns = ['word','probability'])
