@@ -285,10 +285,12 @@ def show_top_10(matrix, model, number_of_topics):
         print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
 
 def main():
-    if (len(sys.argv) == 2):
-        documents_path = sys.argv[1]
+    if (len(sys.argv) == 3):
+        documents_path = sys.argv[2]
+        iterations = sys.argv[1]
     else:
         documents_path = './data/combined/wars.txt'
+        iterations = 20
     print("File path: " + documents_path)
     model = NaiveModel(documents_path)
     model.build_corpus()
@@ -296,9 +298,8 @@ def main():
     print("Vocabulary size:" + str(len(model.vocabulary)))
     print("Number of documents:" + str(len(model.documents)))
     number_of_topics = 5
-    max_iterations = 200
     epsilon = 0.001
-    topic_word, doc_topic = model.naivemodel(number_of_topics, max_iterations, epsilon)
+    topic_word, doc_topic = model.naivemodel(number_of_topics, int(iterations), epsilon)
     topic_word_prob_dict = dict()
 
     show_top_10(topic_word, model, number_of_topics)

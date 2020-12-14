@@ -438,7 +438,7 @@ def show_top_10(matrix, model):
 
 
 def main():
-    if (len(sys.argv) == 2):
+    if (len(sys.argv) > 2):
         iterations = sys.argv[1]
         documents_path = sys.argv[2]
         collections = sys.argv[3:]
@@ -446,6 +446,7 @@ def main():
         iterations = 10
         documents_path = './data/combined/laptops.txt'
         collections = ['./data/inspiron.txt', './data/mac.txt', './data/thinkpad.txt']
+        
     print("File path: " + documents_path)
     model = CCModel(documents_path, collections)
     model.build_corpus()
@@ -454,7 +455,7 @@ def main():
     print("Number of collections:" + str(len(model.documents)))
     number_of_topics = 8
     epsilon = 0.001
-    topic_word, coll_topic_word = model.ccmodel(number_of_topics, iterations, epsilon)
+    topic_word, coll_topic_word = model.ccmodel(number_of_topics, int(iterations), epsilon)
     
     show_top_10(topic_word, model)
 
