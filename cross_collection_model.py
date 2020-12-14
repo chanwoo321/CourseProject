@@ -28,12 +28,13 @@ def normalize(input_matrix):
     return new_matrix
 
 def normalize_c(input_matrix):
-    """
-    Normalizes the columns of a 2d input matrix so they sum to 1
-    """
+    
 
-    temp = input_matrix.copy()
-    return normalize(temp.T).T
+        col_sums = np.nan_to_num(input_matrix).sum(axis=0, keepdims=True)
+
+        #new_matrix =  input_matrix / col_sums if np.isscalar(col_sums) else input_matrix / col_sums[np.newaxis, :]
+        new_matrix = np.divide(input_matrix, col_sums)
+        return np.nan_to_num(new_matrix)
 
 class CCModel(object):
     """
@@ -201,65 +202,38 @@ class CCModel(object):
         #     self.initialize_uniformly(number_of_topics)
         self.initialize_randomly(number_of_topics)
 
+    
+
     def expectation_step(self):
         """ The E-step updates P(z | w, d)
         """
 
-        # for doc in range(self.number_of_documents):
-        #     for word in range(self.vocabulary_size):
-        #         topic_prob_sum = 0.0
-        #
-        #         for topic in range(self.number_of_topics):
-        #             self.topic_prob[doc, topic, word] = self.topic_word_prob[topic, word] * self.document_topic_prob[doc, topic]
-        #             topic_prob_sum += self.topic_prob[doc, topic, word]
-        #
-        #         if topic_prob_sum == 0:
-        #             for topic in range(self.number_of_topics):
-        #                 self.topic_prob[doc, topic, word] = 0
-        #             self.background_prob[doc, word] = 1
-        #
-        #         else:
-        #             self.topic_prob[doc,:,word] /= topic_prob_sum
-        #             curr_back_prob = self.background_word_prob[word]
-        #             back_sum = self.b_lambda * curr_back_prob + ((1 - self.b_lambda) * topic_prob_sum)
-        #             self.background_prob[doc, word] = self.b_lambda * curr_back_prob / back_sum
-
         # updates j and B
+
         for collection in range(self.number_of_collections):
+
             for doc in range(self.number_of_documents_per_collection[collection]):
-                for word in range(self.vocabulary_size):
-                    topic_prob_sum = 0.0
 
-                    for topic in range(self.number_of_topics):
-                        # build numberator of p(z,c,w = j)
-                        self.topic_prob_j[collection][doc,topic,word] = self.document_topic_prob[collection][doc, topic]
-                        to_mult = self.c_lambda * self.topic_word_prob[topic,word]
-                        to_mult += (1 - self.c_lambda) * self.topic_word_prob_per_collection[collection][topic, word]
-                        self.topic_prob_j[collection][doc,topic,word] *= to_mult
+                # j formula here
+                to_mult_j = (1 - self.c_lambda) * self.topic_word_prob_per_collection[collection]
+                to_mult_j += (self.c_lambda *  self.topic_word_prob)
+                to_mult_j = np.transpose([self.document_topic_prob[collection][doc]]) * to_mult_j
 
-                        topic_prob_sum += self.topic_prob_j[collection][doc,topic,word]
+                back = self.b_lambda * self.background_word_prob
 
-                        # fill out C!
-                        self.topic_prob_C[collection][doc,topic,word] = self.c_lambda * self.topic_word_prob[topic, word]
-                        denom = self.topic_prob_C[collection][doc,topic,word]
-                        denom += (1 - self.c_lambda) * self.topic_word_prob_per_collection[collection][topic, word]
-                        self.topic_prob_C[collection][doc,topic,word] /= denom
+                # save denominator for background prob calculation
+                denom = back + ((1 - self.b_lambda) * to_mult_j.sum(axis=0, keepdims=True))
 
-                    if topic_prob_sum == 0:
-                        """
-                        IDK if this part needs to be implemented - left a print statement in case it does
-                        """
-                        print("please implement something for this case")
-                        assert(False)
-                    else:
-                        self.topic_prob_j[collection][doc,topic,word] /= topic_prob_sum
+                # remember to normalize
+                to_mult_j = normalize_c(to_mult_j)
+                self.topic_prob_j[collection][doc] = to_mult_j
 
-                        # fill out the background)
-                        self.topic_prob_B[collection][doc,word] = self.b_lambda * self.background_word_prob[word]
-                        denom = self.topic_prob_B[collection][doc,word]
-                        denom += (1 - self.b_lambda) * topic_prob_sum
-                        self.topic_prob_B[collection][doc,word] /= denom
-        
+                self.topic_prob_B[collection][doc] = np.nan_to_num(np.divide(back, denom))
+
+                # put C formula here
+                c_lamb = self.c_lambda * self.topic_word_prob
+                denom = c_lamb + ((1 - self.c_lambda) * self.topic_word_prob_per_collection[collection])
+                self.topic_prob_C[collection][doc] = np.nan_to_num(np.divide(c_lamb, denom))
         
         #print(self.topic_prob_j)
 
@@ -268,33 +242,6 @@ class CCModel(object):
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
         """
-        # # print("M step:")
-        # for z in range(0, number_of_topics):
-        #     for j in range(0, self.vocabulary_size):
-        #         sum = 0
-        #         for d_index in range(0, len(self.documents)):
-        #             sum += self.term_doc_matrix[d_index, j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
-        #         self.topic_word_prob[z, j] = sum
-        # self.topic_word_prob = normalize(self.topic_word_prob)
-        #
-        # # Update the background_word_prob
-        # for j in range(0, self.vocabulary_size):
-        #     sum = 0
-        #     for d_index in range(0, len(self.documents)):
-        #         sum += self.term_doc_matrix[d_index, j] * self.background_prob[d_index, j]
-        #     self.background_word_prob[j] = sum
-        #
-        # # update P(z | d)
-        # for d_index in range(0, len(self.documents)):
-        #     for z in range(0, number_of_topics):
-        #         sum = 0
-        #         for j in range(0, self.vocabulary_size):
-        #             sum += self.term_doc_matrix[d_index, j] * self.topic_prob[d_index, z, j] * (1 - self.background_prob[d_index, j])
-        #         self.document_topic_prob[d_index, z] = sum
-        # #print(self.document_topic_prob[0])
-        # self.document_topic_prob = normalize(self.document_topic_prob)
-
-        # update pi, which is document_topic_prob[collection][doc, topic]
 
         for collection in range(self.number_of_collections):
             for doc in range(self.number_of_documents_per_collection[collection]):
@@ -462,6 +409,23 @@ def main():
     for collection in range(len(collections)):
         print(collections[collection])
         show_top_10(coll_topic_word[collection], model)
+
+def show_top_10(matrix, model):
+    prob_dict = dict()
+
+    for j in range(len(matrix)):
+        prob_dict[j] = list()
+
+        for i in range(len(matrix[j])):
+            if matrix[j][i] != 0:
+                # if the word prob != 0 for a topic, add to topic dict
+                prob_dict[j].append((model.vocabulary[i], matrix[j][i]))
+
+    for topic in range(len(matrix)):
+        df = pd.DataFrame(prob_dict[topic], columns = ['word','probability'])
+        df = df.sort_values(by='probability', ascending=False)
+        print(list(df.head(10).to_records(index=False))) # get the top 10 words by their probability in topic 0
+
 
 if __name__ == '__main__':
     main()
