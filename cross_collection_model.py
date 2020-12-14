@@ -28,11 +28,10 @@ def normalize(input_matrix):
     return new_matrix
 
 def normalize_c(input_matrix):
-    
+
 
         col_sums = np.nan_to_num(input_matrix).sum(axis=0, keepdims=True)
 
-        #new_matrix =  input_matrix / col_sums if np.isscalar(col_sums) else input_matrix / col_sums[np.newaxis, :]
         new_matrix = np.divide(input_matrix, col_sums)
         return np.nan_to_num(new_matrix)
 
@@ -76,17 +75,6 @@ class CCModel(object):
         3-D list that contains the documents in an easy to read format. Collection -> document number -> word
         """
 
-        # open_file = open(self.documents_path, 'r')
-        # new_documents = []
-        # contents = open_file.readlines()
-        # for line in range(len(contents)):
-        #     doc = []
-        #     for word in contents[line].split():
-        #         doc.append(word)
-        #     new_documents.append(doc)
-        # self.documents = new_documents
-        # self.number_of_documents = len(new_documents)
-
         for doc_num in range(len(self.collections)):
             open_file = open(self.collections[doc_num], 'r')
             new_documents = []
@@ -129,20 +117,6 @@ class CCModel(object):
         UPDATE: self.term_doc_matrix[i][j,k] is the count of term k in document j in collection i
         Notice that it is a list of 2D numpy arrays to make a 3D data structure!
         """
-        # new_term_doc_matrix = np.zeros((self.number_of_documents, self.vocabulary_size))
-        #
-        # open_file = open(self.documents_path)
-        # contents = open_file.readlines()
-        # for line in range(len(contents)):
-        #     words_dict = {}
-        #     for word in contents[line].split():
-        #         if word in words_dict:
-        #             words_dict[word] += 1
-        #         else:
-        #             words_dict[word] = 1
-        #     for key in words_dict:
-        #         new_term_doc_matrix[line, self.vocabulary.index(key)] = words_dict[key]
-        # self.term_doc_matrix = new_term_doc_matrix
 
         for collection in range(self.number_of_collections):
             new_term_doc_matrix = np.zeros((self.number_of_documents_per_collection[collection], self.vocabulary_size))
@@ -166,15 +140,6 @@ class CCModel(object):
         Randomly initializes the matrices self.document_topic_prob, self.topic_word_prob, and self.background_prob
         with a random probability distribution
         """
-        # self.number_of_topics = number_of_topics
-        #
-        # self.document_topic_prob = np.random.random_sample((self.number_of_documents, number_of_topics))
-        # self.topic_word_prob = np.random.random_sample((number_of_topics, self.vocabulary_size))
-        # self.background_word_prob = np.random.random_sample(self.vocabulary_size)
-        #
-        # self.document_topic_prob = normalize(self.document_topic_prob)
-        # self.topic_word_prob = normalize(self.topic_word_prob)
-        # self.background_word_prob = normalize(self.background_word_prob)
 
         self.number_of_topics = number_of_topics
 
@@ -196,13 +161,9 @@ class CCModel(object):
         """
         print("Initializing...")
 
-        # if random:
-        #     self.initialize_randomly(number_of_topics)
-        # else:
-        #     self.initialize_uniformly(number_of_topics)
         self.initialize_randomly(number_of_topics)
 
-    
+
 
     def expectation_step(self):
         """ The E-step updates P(z | w, d)
@@ -234,7 +195,7 @@ class CCModel(object):
                 c_lamb = self.c_lambda * self.topic_word_prob
                 denom = c_lamb + ((1 - self.c_lambda) * self.topic_word_prob_per_collection[collection])
                 self.topic_prob_C[collection][doc] = np.nan_to_num(np.divide(c_lamb, denom))
-        
+
         #print(self.topic_prob_j)
 
 
@@ -267,7 +228,6 @@ class CCModel(object):
         for topic in range(0, number_of_topics):
             for word in range(self.vocabulary_size):
                 sum1 = 0
-                # sum2 = 0
                 for collection in range(self.number_of_collections):
                     for doc in range(self.number_of_documents_per_collection[collection]):
                         prod = self.term_doc_matrix[collection][doc,word] * (1 - self.topic_prob_B[collection][doc,word])
@@ -275,8 +235,6 @@ class CCModel(object):
                         sum1 += prod * self.topic_prob_C[collection][doc,topic,word]
                         # sum2 += prod * (1 - self.topic_prob_C[collection][doc,topic,word])
                 self.topic_word_prob[topic, word] = sum1
-                # bad I think this line below is weird, topic word prob per collection doesnt seem to get updated
-                # self.topic_word_prob_per_collection ########################################################
 
         for collection in range(self.number_of_collections):
             for z in range(0, number_of_topics):
@@ -286,26 +244,12 @@ class CCModel(object):
                         prod = self.term_doc_matrix[collection][doc,j] * (1 - self.topic_prob_B[collection][doc,j])
                         prod *= self.topic_prob_j[collection][doc,z,j]
                         sum2 += prod * (1 - self.topic_prob_C[collection][doc,z,j])
-                    # bad I think this line below is weird, topic word prob per collection doesnt seem to get updated
                     self.topic_word_prob_per_collection[collection][z, j] = sum2
 
         self.topic_word_prob = normalize(self.topic_word_prob)
-        # print(type(self.topic_word_prob))
-        # print(type(self.topic_word_prob_per_collection))
-        # print(type(self.topic_word_prob_per_collection))
         for collection in range(self.number_of_collections):
             self.topic_word_prob_per_collection[collection] = normalize(self.topic_word_prob_per_collection[collection])
 
-        """denom_sum = 0
-        for collection in range(self.number_of_collections):
-            for z in range(0, number_of_topics):
-                for j in range(self.vocabulary_size):
-                    denom_sum += self.topic_word_prob_per_collection[collection][z, j]
-
-        for collection in range(self.number_of_collections):
-            for z in range(0, number_of_topics):
-                for j in range(self.vocabulary_size):
-                    self.topic_word_prob_per_collection[collection][z, j] /= denom_sum"""
 
     def calculate_likelihood(self, number_of_topics):
         """ Calculate the current log-likelihood of the model using
@@ -403,7 +347,7 @@ def main():
     number_of_topics = 8
     epsilon = 0.001
     topic_word, coll_topic_word = model.ccmodel(number_of_topics, int(iterations), epsilon)
-    
+
     show_top_10(topic_word, model)
 
     for collection in range(len(collections)):
