@@ -407,7 +407,7 @@ class CCModel(object):
         # Run the EM algorithm
         current_likelihood = 0.0
 
-        for iteration in range(2): # change this to number of iterations
+        for iteration in range(max_iter): # change this to number of iterations
             print("Iteration #" + str(iteration + 1) + "...")
 
             self.expectation_step()
@@ -446,7 +446,7 @@ def main():
         iterations = 10
         documents_path = './data/combined/laptops.txt'
         collections = ['./data/inspiron.txt', './data/mac.txt', './data/thinkpad.txt']
-        
+
     print("File path: " + documents_path)
     model = CCModel(documents_path, collections)
     model.build_corpus()
