@@ -4,6 +4,8 @@ Please fork this repository and paste the github link of your fork on Microsoft 
 
 # [Demo Video](https://mediaspace.illinois.edu/media/t/1_g9vflp49)
 
+Note that the video was not recorded with the final edits to the repository. The actual results may differ/be more accurate.
+
 # Table of Contents
 
 [Introduction](#intro)
@@ -79,7 +81,7 @@ python cross_collection_model.py
 The above will run the Cross Collection model on the default dataset of the laptop reviews with the collections being mac.txt, inspiron.txt, and thinkpad.txt. If you want to run it with another set of data, you will want to run the following command:
 
 ```
-python cross_collection_model.py 10 ./data/inspiron.txt ./data/mac.txt ./data/thinkpad.txt
+python cross_collection_model.py 10 ./data/combined/laptops.txt ./data/inspiron.txt ./data/mac.txt ./data/thinkpad.txt
 ```
 
 The format being:
