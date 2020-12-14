@@ -149,6 +149,10 @@ Calculates the log-likelihood of the model using the model's updated probability
 
 Runs the model in its entirety on self.document_path and the provided parameters.
 
+#### show_top_10(matrix, model)
+
+Displays the top 10 probabilities of a topic-word-probability matrix given a model's vocabulary
+
 #### main(documents_path)
 
 This is the default function used when running from the terminal. Runs the model with default parameters.
@@ -157,7 +161,7 @@ This is the default function used when running from the terminal. Runs the model
 
 ## Cross Collection mixture model
 
-The code from the Cross Collection model is primarily based on the PLSA algorithm as used in MP3 of CS 410. This model was estimated using the EM (Estimation-Maximization) algorithm. Here is a quick overview of the functions provided (functions shared with baseline are omitted):
+The code from the Cross Collection model is also primarily based on the PLSA algorithm as used in MP3 of CS 410 with modifications according to the paper's given formulae. This model was estimated using the EM (Estimation-Maximization) algorithm. Here is a quick overview of the functions provided (functions shared with baseline are omitted):
 
 ### class CCModel(object)
 
@@ -174,7 +178,6 @@ Constructs a list of unique works in the whole corpus and updates self.vocabular
 #### build_term_doc_matrix(self)
 
 Constructs a term document matrix where each row represents a document, and each column represents a vocabulary term.
-
 
 #### initialize_randomly(self, number_of_topics)
 
@@ -203,6 +206,10 @@ Calculates the log-likelihood of the model using the model's updated probability
 #### naivemodel(self, number_of_topics, max_iter, epsilon)
 
 Runs the model in its entirety on self.document_path and the provided parameters.
+
+#### show_top_10(matrix, model)
+
+Displays the top 10 probabilities of a topic-word-probability matrix given a model's vocabulary
 
 #### main(documents_path)
 
