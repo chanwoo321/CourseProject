@@ -16,6 +16,8 @@ Please fork this repository and paste the github link of your fork on Microsoft 
 
  - [Baseline Model](#baseline)
 
+ - [Cross-Collection model](#ccm)
+
 <a name="intro"/>
 
 # Introduction
@@ -123,6 +125,8 @@ Runs the model in its entirety on self.document_path and the provided parameters
 #### main(documents_path)
 
 This is the default function used when running from the terminal. Runs the model with default parameters.
+
+<a name="ccm"/>
 
 ## Cross Collection mixture model
 
