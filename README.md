@@ -59,8 +59,35 @@ python main.py
 This will run the baseline model on data/combined/laptops.txt by default. If another data set should be analyzed, provide the file location as a parameter. For example, if analysis wants to be run on war models, run the following:
 
 ```
-python main.py ./data/combined/wars.txt
+python main.py 200 ./data/combined/wars.txt
 ```
+
+The format being:
+
+```
+python main.py [iterations] [dataset]
+```
+
+To run the cross-collection mixture model, run the following code in the terminal:
+
+```
+python cross_collection_model.py
+```
+
+The above will run the Cross Collection model on the default dataset of the laptop reviews with the collections being mac.txt, inspiron.txt, and thinkpad.txt. If you want to run it with another set of data, you will want to run the following command:
+
+```
+python cross_collection_model.py 10 ./data/inspiron.txt ./data/mac.txt ./data/thinkpad.txt
+```
+
+The format being:
+
+```
+python cross_collection_model.py [iterations] [full dataset] [collections files separated by spaces]
+```
+
+Note that running either model may take a long amount of time because of how much data the model is processing. We noticed that you could see pretty realistic word-probability assignments in as little as 5 iterations of testing.
+
 
 
 <a name="code"/>
