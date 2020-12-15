@@ -54,7 +54,7 @@ The data is organized inside of the "data" folder of this repository. Each text 
 # Running the software
 
 
-This software uses Python3 and uses numpy. To run the baseline mixture model, ensure that numpy and python are properly installed and run the following code in the terminal:
+This software uses Python3 and uses numpy and pandas. To run the baseline mixture model, ensure that numpy, pandas, and python are properly installed (pip install numpy/pip install pandas) and run the following code in the terminal:
 
 ```
 python main.py
